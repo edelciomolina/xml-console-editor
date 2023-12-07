@@ -1,0 +1,30 @@
+{
+    "title": "XML Editor",
+    "message": "Navigate and Edit",
+    "directory": "C:\\Users\\name\\downloads",
+    "freezeColumns": 3,
+    "editor": [
+        {
+            "name": "Column_A",
+            "value": "__filename"
+        },
+        {
+            "name": "Column_B",
+            "value": "node1.node2.node3.a.node5"
+        },
+        {
+            "name": "Column_C",
+            "value": "node1.node2.node3.b.node5"
+        },
+        {
+            "name": "Column_D",
+            "value": "node1.node2.node3.c.node5",
+            "editable": "decimal",
+            "cloneTo": [
+                "node1.node2.node3.a.node1.node2",
+                "node1.node2.node3.b.node1.node2",
+                "node1.node2.node3.c.node1.node2.node3"
+            ]
+        }
+    ]
+}
