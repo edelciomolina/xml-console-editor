@@ -6,10 +6,12 @@ const path = require('path')
 const xml2js = require('xml2js')
 const config = require('./config.json')
 
+let xmls = {}
+
 const getValueFromPath = (obj, xmlPath) => {
-    const partes = xmlPath.split('_')
+    const parts = xmlPath.replace('.', '_').split('_')
     let value = obj
-    for (const parte of partes) {
+    for (const parte of parts) {
         if (value && Object.prototype.hasOwnProperty.call(value, parte)) {
             value = value[parte]
             if (Array.isArray(value)) {
@@ -20,6 +22,31 @@ const getValueFromPath = (obj, xmlPath) => {
         }
     }
     return value
+}
+
+const setValueFromPath = (obj, xmlPath, newValue) => {
+    const parts = xmlPath.replace('.', '_').split('_')
+    let value = obj
+    for (let i = 0; i < parts.length; i++) {
+        const parte = parts[i]
+        if (value && Object.prototype.hasOwnProperty.call(value, parte)) {
+            if (i === parts.length - 1) {
+                if (Array.isArray(value[parte])) {
+                    value[parte] = [newValue]
+                } else {
+                    value[parte] = newValue
+                }
+            } else {
+                value = value[parte]
+                if (Array.isArray(value)) {
+                    value = value[0]
+                }
+            }
+        } else {
+            // Se o caminho não existe, saia da função sem fazer alterações
+            return
+        }
+    }
 }
 
 const readAllFiles = (dirPath) => {
@@ -50,44 +77,61 @@ const readAllFiles = (dirPath) => {
 }
 
 const mountEditor = (columns, rows) => {
-    inquirer.registerPrompt('table-input', TableInput)
+    return new Promise((resolve) => {
+        inquirer.registerPrompt('table-input', TableInput)
 
-    inquirer
-        .prompt([
-            {
-                type: 'table-input',
-                name: 'pricing',
-                message: config.title,
-                infoMessage: config.message,
-                hideInfoWhenKeyPressed: true,
-                freezeColumns: config.freezeColumns,
-                decimalPoint: '.',
-                decimalPlaces: 2,
-                selectedColor: chalk.yellow,
-                editableColor: chalk.bgYellow.bold,
-                editingColor: chalk.bgGreen.bold,
-                columns,
-                rows,
-                validate: () => false,
-            },
-        ])
-        .then((answers) => {
-            console.log(answers)
-        })
-        .catch(() => {})
+        inquirer
+            .prompt([
+                {
+                    type: 'table-input',
+                    name: 'editor',
+                    message: config.title,
+                    infoMessage: config.message,
+                    hideInfoWhenKeyPressed: true,
+                    freezeColumns: config.freezeColumns,
+                    decimalPoint: '.',
+                    decimalPlaces: 2,
+                    selectedColor: chalk.yellow,
+                    editableColor: chalk.bgYellow.bold,
+                    editingColor: chalk.bgGreen.bold,
+                    columns,
+                    rows,
+                    validate: () => false,
+                },
+            ])
+            .then(async (answers) => {
+                answers.editor.result.forEach((row) => {
+                    config.editor
+                        .filter((item) => item.editable)
+                        .forEach((field) => {
+                            Object.keys(xmls).forEach(async (xmlName) => {
+                                const xml = xmls[xmlName]
+                                setValueFromPath(xml, field.value, row[field.value])
+                                field.cloneTo.forEach((key) => {
+                                    setValueFromPath(xml, key, row[key])
+                                })
+                                xmls[xmlName] = xml
+
+                                const outputPath = path.join(config.directory, `${xmlName}.new.xml`)
+                                await saveXMLToFile(xml, outputPath)
+                            })
+                        })
+                })
+            })
+            .catch(() => {})
+    })
 }
 
 const prepareColumnsTable = async () => {
     const columns = config.editor
     columns.forEach((row) => {
         row.value = row.value.replace(/\./g, '_')
-        delete row.cloneTo
     })
     return columns
 }
 
 const prepareRownsTable = async (columns) => {
-    const xmls = await readAllFiles(config.directory)
+    xmls = await readAllFiles(config.directory)
     const rows = []
 
     Object.keys(xmls).forEach((filename) => {
@@ -105,6 +149,21 @@ const prepareRownsTable = async (columns) => {
 
     return rows
 }
+
+const convertObjectToXML = (obj) => {
+    const builder = new xml2js.Builder()
+    const xml = builder.buildObject(obj)
+    return xml
+}
+
+const writeXMLToFile = async (xml, filePath) => {
+    await fs.writeFileSync(filePath, xml)
+}
+const saveXMLToFile = async (xmls, filePath) => {
+    const xml = convertObjectToXML(xmls)
+    await writeXMLToFile(xml, filePath)
+}
+
 //init
 ;(async () => {
     const columns = await prepareColumnsTable()
