@@ -9,18 +9,14 @@
     "editor": [
         {
             "name": "Column_A",
-            "value": "__filename"
-        },
-        {
-            "name": "Column_B",
             "value": "node1.node2.node3.a.node5"
         },
         {
-            "name": "Column_C",
+            "name": "Column_B",
             "value": "node1.node2.node3.b.node5"
         },
         {
-            "name": "Column_D",
+            "name": "Column_C",
             "value": "node1.node2.node3.c.node5",
             "editable": "decimal",
             "cloneTo": [
