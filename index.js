@@ -9,7 +9,7 @@ const config = require('./config.json')
 let xmls = {}
 
 const getValueFromPath = (obj, xmlPath) => {
-    const parts = xmlPath.replace('.', '_').split('_')
+    const parts = xmlPath.replace(/\./g, '_').split('_')
     let value = obj
     for (const parte of parts) {
         if (value && Object.prototype.hasOwnProperty.call(value, parte)) {
@@ -25,7 +25,7 @@ const getValueFromPath = (obj, xmlPath) => {
 }
 
 const setValueFromPath = (obj, xmlPath, newValue) => {
-    const parts = xmlPath.replace('.', '_').split('_')
+    const parts = xmlPath.replace(/\./g, '_').split('_')
     let value = obj
     for (let i = 0; i < parts.length; i++) {
         const parte = parts[i]
@@ -100,22 +100,25 @@ const mountEditor = (columns, rows) => {
                 },
             ])
             .then(async (answers) => {
-                answers.editor.result.forEach((row) => {
-                    config.editor
+                await answers.editor.result.forEach(async (row) => {
+                    const xmlName = row.__filename
+                    const xml = xmls[xmlName]
+                    await config.editor
                         .filter((item) => item.editable)
-                        .forEach((field) => {
-                            Object.keys(xmls).forEach(async (xmlName) => {
-                                const xml = xmls[xmlName]
-                                setValueFromPath(xml, field.value, row[field.value])
-                                field.cloneTo.forEach((key) => {
-                                    setValueFromPath(xml, key, row[key])
-                                })
-                                xmls[xmlName] = xml
-
-                                const outputPath = path.join(config.directory, `${xmlName}.new.xml`)
-                                await saveXMLToFile(xml, outputPath)
+                        .forEach(async (field) => {
+                            const newValue = row[field.value]
+                            await setValueFromPath(xml, field.value, newValue)
+                            await field.cloneTo.forEach(async (key) => {
+                                await setValueFromPath(xml, key, newValue)
                             })
+                            xmls[xmlName] = xml
                         })
+                })
+                Object.keys(xmls).forEach(async (xmlName) => {
+                    const xml = xmls[xmlName]
+                    const fileName = getValueFromPath(xml, config.outputFilename) + '.xml'
+                    const outputPath = path.join(config.outputDir, fileName)
+                    await saveXMLToFile(xml, outputPath)
                 })
             })
             .catch(() => {})
@@ -123,7 +126,15 @@ const mountEditor = (columns, rows) => {
 }
 
 const prepareColumnsTable = async () => {
-    const columns = config.editor
+    const columns = [
+        ...[
+            {
+                name: 'Filename',
+                value: '__filename',
+            },
+        ],
+        ...config.editor,
+    ]
     columns.forEach((row) => {
         row.value = row.value.replace(/\./g, '_')
     })
@@ -131,7 +142,7 @@ const prepareColumnsTable = async () => {
 }
 
 const prepareRownsTable = async (columns) => {
-    xmls = await readAllFiles(config.directory)
+    xmls = await readAllFiles(config.inputDir)
     const rows = []
 
     Object.keys(xmls).forEach((filename) => {
@@ -149,23 +160,40 @@ const prepareRownsTable = async (columns) => {
 
     return rows
 }
+const validateAndPrepareObject = (obj) => {
+    for (let key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            if (obj[key] === null || obj[key] === undefined) {
+                obj[key] = ''
+            } else if (typeof obj[key] === 'object') {
+                validateAndPrepareObject(obj[key])
+            }
+        }
+    }
+    return obj
+}
 
 const convertObjectToXML = (obj) => {
+    const preparedObj = validateAndPrepareObject(obj)
     const builder = new xml2js.Builder()
-    const xml = builder.buildObject(obj)
+    const xml = builder.buildObject(preparedObj)
     return xml
 }
 
-const writeXMLToFile = async (xml, filePath) => {
+const saveXMLToFile = async (xmls, filePath) => {
+    const xml = await convertObjectToXML(xmls)
     await fs.writeFileSync(filePath, xml)
 }
-const saveXMLToFile = async (xmls, filePath) => {
-    const xml = convertObjectToXML(xmls)
-    await writeXMLToFile(xml, filePath)
+
+const prepareConfig = async () => {
+    if (!fs.existsSync(config.outputDir)) {
+        await fs.mkdirSync(config.outputDir, { recursive: true })
+    }
 }
 
 //init
 ;(async () => {
+    await prepareConfig()
     const columns = await prepareColumnsTable()
     const rows = await prepareRownsTable(columns)
     await mountEditor(columns, rows)
