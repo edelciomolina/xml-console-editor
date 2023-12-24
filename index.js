@@ -43,7 +43,6 @@ const setValueFromPath = (obj, xmlPath, newValue) => {
                 }
             }
         } else {
-            // Se o caminho não existe, saia da função sem fazer alterações
             return
         }
     }
@@ -53,8 +52,6 @@ const readAllFiles = (dirPath) => {
     const resultObject = {}
     return new Promise((resolve) => {
         fs.readdir(dirPath, (err, files) => {
-            if (err) console.error('Erro ao listar arquivos:', err)
-
             const xmlFiles = files.filter((file) => path.extname(file).toLowerCase() === '.xml')
             xmlFiles.forEach((xmlFile) => {
                 const filePath = path.join(dirPath, xmlFile)
@@ -74,6 +71,14 @@ const readAllFiles = (dirPath) => {
             })
         })
     })
+}
+
+const moveXMLProcessed = async (inputPath, processedPath) => {
+    try {
+        await fs.renameSync(inputPath, processedPath)
+    } catch (error) {
+        console.log(error)
+    }
 }
 
 const mountEditor = (columns, rows) => {
@@ -119,7 +124,12 @@ const mountEditor = (columns, rows) => {
                     const fileName = getValueFromPath(xml, config.outputFilename) + '.xml'
                     const outputPath = path.join(config.outputDir, fileName)
                     await saveXMLToFile(xml, outputPath)
+
+                    const inputPath = path.join(config.inputDir, xmlName)
+                    const processedPath = path.join(config.processedDir, xmlName)
+                    await moveXMLProcessed(inputPath, processedPath)
                 })
+                resolve()
             })
             .catch(() => {})
     })
@@ -188,6 +198,9 @@ const saveXMLToFile = async (xmls, filePath) => {
 const prepareConfig = async () => {
     if (!fs.existsSync(config.outputDir)) {
         await fs.mkdirSync(config.outputDir, { recursive: true })
+    }
+    if (!fs.existsSync(config.processedDir)) {
+        await fs.mkdirSync(config.processedDir, { recursive: true })
     }
 }
 

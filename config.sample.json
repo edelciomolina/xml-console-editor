@@ -2,8 +2,8 @@
     "title": "XML Editor",
     "message": "Navigate and Edit",
     "inputDir": "C:\\myfiles",
-    "outputDir": "C:\\myfiles\\_saved",
-    "processedDir": "C:\\myfiles\\_backup",
+    "outputDir": "C:\\myfiles\\_modified",
+    "processedDir": "C:\\myfiles\\_processed",
     "outputFilename": "node1.node2.node3.a.node5",
     "freezeColumns": 3,
     "editor": [
