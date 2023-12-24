@@ -105,3 +105,4 @@ dist
 
 # Project Files 
 config.json
+.dist

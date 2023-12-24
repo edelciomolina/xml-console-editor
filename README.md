@@ -1,4 +1,4 @@
-# XML Console Editor
+# xml-console-editor [![npm version](https://badge.fury.io/js/xml-console-editor.svg)](https://badge.fury.io/js/xml-console-editor)
 
 ## Description
 
@@ -45,5 +45,5 @@ data.
 ## Installation and Execution
 
 ```bash
-npm install xml-console-editor
+npm install --save xml-console-editor
 ```

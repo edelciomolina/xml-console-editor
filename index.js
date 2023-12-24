@@ -4,9 +4,26 @@ const TableInput = require('inquirer-table-input')
 const fs = require('fs')
 const path = require('path')
 const xml2js = require('xml2js')
-const config = require('./config.json')
 
 let xmls = {}
+
+let config = {}
+const loadConfig = async () => {
+    return new Promise((resolve) => {
+        fs.readFile('./config.json', 'utf8', (err, data) => {
+            if (err) {
+                console.error(err.message)
+                return
+            }
+            try {
+                config = JSON.parse(data)
+                resolve()
+            } catch (parseErr) {
+                console.error('config.json not found')
+            }
+        })
+    })
+}
 
 const getValueFromPath = (obj, xmlPath) => {
     const parts = xmlPath.replace(/\./g, '_').split('_')
@@ -206,6 +223,7 @@ const prepareConfig = async () => {
 
 //init
 ;(async () => {
+    await loadConfig()
     await prepareConfig()
     const columns = await prepareColumnsTable()
     const rows = await prepareRownsTable(columns)
