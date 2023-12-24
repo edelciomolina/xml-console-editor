@@ -5,8 +5,8 @@ const build = exe({
     out: '.dist/XMLConsoleEditor.exe',
     pkg: ['-C', 'GZip'],
     target: 'latest-win-x64',
-    productVersion: '0.0.1',
-    fileVersion: '0.0.1',
+    productVersion: '0.0.2',
+    fileVersion: '0.0.2',
     icon: 'index.ico',
     properties: {
         FileDescription: 'XML Console Editor',
