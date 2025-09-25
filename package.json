@@ -1,5 +1,5 @@
 {
-    "name": "xml-console.editor",
+    "name": "xml-console-editor",
     "version": "0.0.2",
     "description": "An interactive XML editing tool for processing and transforming XML files using Console",
     "main": "index.js",
@@ -10,7 +10,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/edelciomolina/xml-console.editor.git"
+        "url": "git+https://github.com/edelciomolina/xml-console-editor.git"
     },
     "keywords": [
         "xml",
@@ -21,9 +21,9 @@
     "author": "Edelcio Molina",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/edelciomolina/xml-console.editor/issues"
+        "url": "https://github.com/edelciomolina/xml-console-editor/issues"
     },
-    "homepage": "https://github.com/edelciomolina/xml-console.editor#readme",
+    "homepage": "https://github.com/edelciomolina/xml-console-editor#readme",
     "dependencies": {
         "chalk": "^3.0.0",
         "inquirer": "^7.0.3",
