@@ -1,6 +1,6 @@
 {
     "name": "xml-console-editor",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "An interactive XML editing tool for processing and transforming XML files using Console",
     "main": "index.js",
     "scripts": {
