@@ -5,6 +5,7 @@
     "outputDir": "C:\\myfiles\\_modified",
     "processedDir": "C:\\myfiles\\_processed",
     "outputFilename": "node1.node2.node3.a.node5",
+    "outputFilenameExtra": "node1.node2.node3.a.node6",
     "freezeColumns": 3,
     "editor": [
         {

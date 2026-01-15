@@ -138,7 +138,17 @@ const mountEditor = (columns, rows) => {
                 })
                 Object.keys(xmls).forEach(async (xmlName) => {
                     const xml = xmls[xmlName]
-                    const fileName = getValueFromPath(xml, config.outputFilename) + '.xml'
+                    const baseFileName = getValueFromPath(xml, config.outputFilename)
+                    let fileName = baseFileName
+
+                    if (config.outputFilenameExtra) {
+                        const extraFileNamePart = getValueFromPath(xml, config.outputFilenameExtra)
+                        if (extraFileNamePart) {
+                            fileName = `${baseFileName}_${extraFileNamePart}`
+                        }
+                    }
+
+                    fileName = fileName + '.xml'
                     const outputPath = path.join(config.outputDir, fileName)
                     await saveXMLToFile(xml, outputPath)
 
